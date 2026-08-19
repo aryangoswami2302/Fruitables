@@ -1,0 +1,66 @@
+{% extends 'seller-header.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+
+<body>
+
+    <!-- Single Page Header start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Edit Product</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active text-white">Edit Product</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+
+
+    <!-- SignUp Start -->
+    <div class="container-fluid contact py-5">
+        <div class="container py-5">
+            <div class="p-5 bg-light rounded">
+                <div class="row g-4">
+                    <div class="col-lg-12">
+                        <form action="{% url 'seller-edit-product' pk=product.pk %}" method="post" class=""
+                            enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <select name="product_catagory" class="w-100 form-control border-0 py-3 mb-4">
+                                {% if product.product_catagory == "fruits" %}
+                                <option>----Select product category----</option>
+                                <option value="fruits" selected>Fruits</option>
+                                <option value="vegetables">Vegetables</option>
+                                {% elif product.product_catagory == "Vegetables"%}
+                                <option>----Select product category----</option>
+                                <option value="fruits">Fruits</option>
+                                <option value="vegetables">Vegetables</option>
+                                {% else %}
+                                <option>----Select product category----</option>
+                                {% endif %}
+                            </select>
+                            <input type="text" class="w-100 form-control border-0 py-3 mb-4"
+                                value="{{ product.product_name }}" name="product_name">
+                            <input type="text" class="w-100 form-control border-0 py-3 mb-4"
+                                value="{{ product.product_price }}" placeholder="Your Product Price"
+                                name="product_price">
+                            <textarea class="w-100 form-control border-0 mb-4" rows="5" cols="10"
+                                name="product_desc">{{ product.product_desc }}</textarea>
+                            <img src="{{ product.product_image.url }}" class="img-fluid rounded" alt="Image"
+                                style="width: 100px; height: 100px;">
+                            <input type="file" class="w-100 form-control border-0 py-3 mb-4" name="product_image">
+                            <button class="w-100 btn form-control border-secondary py-3 bg-white text-primary "
+                                type="submit">Update Product</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- SignUp End -->
+
+</body>
+
+</html>
+{% endblock %}

@@ -1,0 +1,375 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Checkout - Fruitables</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Raleway:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .payment-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .order-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-weight: 600;
+        }
+        .summary-row.total {
+            border-top: 2px solid #28a745;
+            padding-top: 15px;
+            font-size: 1.2em;
+            color: #28a745;
+        }
+        .btn-payment {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .spinner {
+            display: none;
+            color: white;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8d7da;
+            border-radius: 4px;
+            display: none;
+        }
+        .success-message {
+            color: #155724;
+            margin-top: 10px;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Start -->
+    <div class="container-fluid fixed-top">
+        <div class="container topbar bg-primary d-none d-lg-block">
+            <div class="d-flex justify-content-between">
+                <div class="top-info ps-2">
+                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i><a href="#" class="text-white">India</a></small>
+                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">info@fruitables.com</a></small>
+                </div>
+            </div>
+        </div>
+        <div class="container px-0">
+            <nav class="navbar navbar-light bg-white navbar-expand-xl">
+                <a href="/" class="navbar-brand"><h1 class="text-primary display-6">Fruitables</h1></a>
+                <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="fa fa-bars text-primary"></span>
+                </button>
+                <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
+                    <div class="navbar-nav mx-auto">
+                        <a href="/" class="nav-item nav-link">Home</a>
+                        <a href="/shop/" class="nav-item nav-link">Shop</a>
+                        <a href="/cart/" class="nav-item nav-link">Cart</a>
+                    </div>
+                    <div class="d-flex m-3 me-0">
+                        <a href="/cart/" class="position-relative me-4 my-auto">
+                            <i class="fa fa-shopping-bag fa-2x"></i>
+                            <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">{{ request.session.cart_count|default:0 }}</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <!-- Navbar End -->
+
+    <!-- Page Header -->
+    <div class="container-fluid page-header py-5" style="margin-top: 100px;">
+        <h1 class="text-center text-white display-6">Secure Checkout</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/cart/">Cart</a></li>
+            <li class="breadcrumb-item active text-white">Checkout</li>
+        </ol>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Checkout Section -->
+    <div class="container-fluid py-5">
+        <div class="container py-5">
+            <div class="row g-5">
+                <!-- Order Summary -->
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Order Summary</h2>
+                    <div class="order-summary">
+                        <h5 class="mb-3">Your Items</h5>
+                        {% if cart_items %}
+                            {% for item in cart_items %}
+                                <div class="cart-item">
+                                    <div>
+                                        <strong>{{ item.product.product_name }}</strong>
+                                        <br>
+                                        <small>Qty: {{ item.product_qty }} × ₹{{ item.product_price }}</small>
+                                    </div>
+                                    <div>₹{{ item.total_price }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">Your cart is empty</p>
+                        {% endif %}
+
+                        <!-- Summary -->
+                        <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px;">
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span>₹{{ total_amount }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Shipping:</span>
+                                <span>₹0 (Free)</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Tax:</span>
+                                <span>₹0</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Total Amount:</span>
+                                <span id="total-amount">₹{{ total_amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Payment Information</h2>
+                    
+                    <div class="payment-section">
+                        <h5 class="mb-3">Billing Address</h5>
+                        {% if user %}
+                            <div class="form-group mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" value="{{ user.fname }} {{ user.lname }}" readonly>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-control" value="{{ user.mobile }}" readonly>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-control" rows="2" readonly>{{ user.address }}</textarea>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Card Payment Section -->
+                    <div class="payment-section">
+                        <h5 class="mb-3">Card Details</h5>
+                        <form id="payment-form">
+                            <div id="card-element" style="border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 15px; height: 40px;"></div>
+                            <div id="card-errors" role="alert" style="color: #dc3545; margin-bottom: 15px;"></div>
+                            
+                            <div class="error-message" id="error-message"></div>
+                            <div class="success-message" id="success-message"></div>
+
+                            <button type="submit" class="btn btn-success btn-payment" id="submit-button">
+                                <span id="button-text">Pay ₹{{ total_amount }}</span>
+                                <div class="spinner" id="spinner"></div>
+                            </button>
+                        </form>
+
+                        <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 4px; border-left: 4px solid #0066cc;">
+                            <h6 class="mb-2"><i class="fas fa-lock text-success"></i> Secure Payment</h6>
+                            <p class="text-muted small">Your payment is processed securely by Stripe. We do not store your card details.</p>
+                        </div>
+                    </div>
+
+                    <a href="/cart/" class="btn btn-outline-secondary w-100 mt-3">
+                        <i class="fas fa-arrow-left"></i> Back to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Checkout Section End -->
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
+        <div class="py-5">
+            <div class="container">
+                <div class="pb-4 mb-4" style="border-bottom: 1px solid rgba(226, 175, 24, 0.5) ;">
+                    <div class="row g-4">
+                        <div class="col-lg-3">
+                            <a href="#">
+                                <h6 class="text-white">Fruitables</h6>
+                            </a>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="position-relative mx-auto">
+                                <input class="form-control border-0 w-100 py-3 px-4 rounded-pill" type="number" placeholder="Your Email">
+                                <button type="button" class="btn btn-primary border-0 border-secondary py-3 px-4 position-absolute rounded-pill text-white" style="top: 0; right: 0;">Subscribe</button>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="d-flex justify-content-end pt-3">
+                                <a class="btn  btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-twitter"></i></a>
+                                <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-youtube"></i></a>
+                                <a class="btn btn-outline-secondary btn-md-square rounded-circle" href=""><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="py-4">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <h6 class="text-white mb-3">Why People Love us!</h6>
+                        <p class="text-white-50">Fruitables Fresh Fruits & Vegetables - Your trusted source for quality produce</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer End -->
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+    <script>
+        // Stripe Setup
+        const stripe = Stripe('{{ stripe_publishable_key }}');
+        const elements = stripe.elements();
+        const cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+
+        // Handle card errors
+        cardElement.on('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // Handle form submission
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const submitButton = document.getElementById('submit-button');
+            const buttonText = document.getElementById('button-text');
+            const spinner = document.getElementById('spinner');
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+
+            submitButton.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+
+            // Get total amount
+            const totalAmount = {{ total_amount }};
+
+            // Create checkout session
+            try {
+                const response = await fetch('/create-checkout-session/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        total_amount: totalAmount
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create checkout session');
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    errorDiv.textContent = 'Error: ' + data.error;
+                    errorDiv.style.display = 'block';
+                    submitButton.disabled = false;
+                    buttonText.style.display = 'inline';
+                    spinner.style.display = 'none';
+                    return;
+                }
+
+                // Redirect to Stripe checkout
+                const { error } = await stripe.redirectToCheckout({
+                    sessionId: data.id
+                });
+
+                if (error) {
+                    errorDiv.textContent = 'Error: ' + error.message;
+                    errorDiv.style.display = 'block';
+                    submitButton.disabled = false;
+                    buttonText.style.display = 'inline';
+                    spinner.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+                submitButton.disabled = false;
+                buttonText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

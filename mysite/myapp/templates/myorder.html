@@ -1,0 +1,344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>My Orders - Fruitables</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Raleway:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .order-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        .order-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .order-id {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+        }
+        .order-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .order-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .order-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .order-status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .info-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+        .order-items {
+            margin: 15px 0;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            font-weight: 500;
+        }
+        .item-qty {
+            color: #666;
+            font-size: 14px;
+        }
+        .item-price {
+            font-weight: 600;
+            color: #28a745;
+        }
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0 0 0;
+            border-top: 2px solid #eee;
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .empty-state i {
+            font-size: 80px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .empty-state p {
+            color: #999;
+            margin-bottom: 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Start -->
+    <div class="container-fluid fixed-top">
+        <div class="container topbar bg-primary d-none d-lg-block">
+            <div class="d-flex justify-content-between">
+                <div class="top-info ps-2">
+                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i><a href="#" class="text-white">India</a></small>
+                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">info@fruitables.com</a></small>
+                </div>
+            </div>
+        </div>
+        <div class="container px-0">
+            <nav class="navbar navbar-light bg-white navbar-expand-xl">
+                <a href="/" class="navbar-brand"><h1 class="text-primary display-6">Fruitables</h1></a>
+                <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="fa fa-bars text-primary"></span>
+                </button>
+                <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
+                    <div class="navbar-nav mx-auto">
+                        <a href="/" class="nav-item nav-link">Home</a>
+                        <a href="/shop/" class="nav-item nav-link">Shop</a>
+                        <a href="/cart/" class="nav-item nav-link">Cart</a>
+                        <a href="/myorder/" class="nav-item nav-link active">My Orders</a>
+                    </div>
+                    <div class="d-flex m-3 me-0">
+                        <a href="/cart/" class="position-relative me-4 my-auto">
+                            <i class="fa fa-shopping-bag fa-2x"></i>
+                            <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">{{ request.session.cart_count|default:0 }}</span>
+                        </a>
+                        <a href="/profile/" class="my-auto">
+                            <i class="fas fa-user fa-2x"></i>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <!-- Navbar End -->
+
+    <!-- Page Header -->
+    <div class="container-fluid page-header py-5" style="margin-top: 100px;">
+        <h1 class="text-center text-white display-6">My Orders</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active text-white">My Orders</li>
+        </ol>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Orders Section -->
+    <div class="container-fluid py-5">
+        <div class="container py-5">
+            {% if orders %}
+                <!-- Statistics -->
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ total_orders }}</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ total_orders }}</div>
+                        <div class="stat-label">Delivered</div>
+                    </div>
+                </div>
+
+                <h3 class="mb-4">Your Order History</h3>
+
+                <!-- Orders List -->
+                {% for order in orders %}
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div>
+                                <div class="order-id">Order #{{ order.id }}</div>
+                                <small class="text-muted">Placed on {{ order.created_at|date:"d M, Y H:i" }}</small>
+                            </div>
+                            <div class="order-status completed">
+                                <i class="fas fa-check-circle"></i> {{ order.get_order_status_display|default:"Completed" }}
+                            </div>
+                        </div>
+
+                        <div class="order-info">
+                            <div class="info-item">
+                                <div class="info-label">Order Total</div>
+                                <div class="info-value">₹{{ order.total_amount }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Status</div>
+                                <div class="info-value">
+                                    <span class="badge bg-success">Paid</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Order Date</div>
+                                <div class="info-value">{{ order.created_at|date:"d/m/Y" }}</div>
+                            </div>
+                            {% if order.stripe_session_id %}
+                                <div class="info-item">
+                                    <div class="info-label">Payment ID</div>
+                                    <div class="info-value" style="font-size: 12px; word-break: break-all;">{{ order.stripe_session_id|truncatechars:20 }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="order-items">
+                            <h6 class="mb-3">Order Items</h6>
+                            <!-- Note: Cart items would need to be associated with orders in a real implementation -->
+                            <div class="order-item">
+                                <div>
+                                    <div class="item-name">Order contents</div>
+                                    <small class="item-qty">See details for purchased items</small>
+                                </div>
+                                <div class="item-price">₹{{ order.total_amount }}</div>
+                            </div>
+                        </div>
+
+                        <div class="order-total">
+                            <span>Total:</span>
+                            <span>₹{{ order.total_amount }}</span>
+                        </div>
+
+                        <div style="margin-top: 15px; text-align: right;">
+                            <a href="/shop/" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-shopping-bag"></i> Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>No Orders Yet</h3>
+                    <p>You haven't placed any orders yet. Start shopping now!</p>
+                    <a href="/shop/" class="btn btn-success btn-lg">
+                        <i class="fas fa-shopping-bag"></i> Start Shopping
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Orders Section End -->
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
+        <div class="py-5">
+            <div class="container">
+                <div class="pb-4 mb-4" style="border-bottom: 1px solid rgba(226, 175, 24, 0.5);">
+                    <div class="row g-4">
+                        <div class="col-lg-3">
+                            <h6 class="text-white">Fruitables</h6>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="position-relative mx-auto">
+                                <input class="form-control border-0 w-100 py-3 px-4 rounded-pill" type="email" placeholder="Your Email">
+                                <button type="button" class="btn btn-primary border-0 border-secondary py-3 px-4 position-absolute rounded-pill text-white" style="top: 0; right: 0;">Subscribe</button>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="d-flex justify-content-end pt-3">
+                                <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-twitter"></i></a>
+                                <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-youtube"></i></a>
+                                <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="#"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="py-4">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <h6 class="text-white mb-3">Why People Love us!</h6>
+                        <p class="text-white-50">Fruitables - Your trusted source for quality fresh produce</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer End -->
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{% extends 'header.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+
+<body>
+
+    <!-- Single Page Header start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Login</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active text-white">Login</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+
+
+    <!-- Login Start -->
+    <div class="container-fluid contact py-5">
+        <div class="container py-5">
+            <div class="p-5 bg-light rounded">
+                <div class="row g-4">
+                    <div class="col-lg-12">
+                        <form action="{% url 'login' %}" method="post">
+                            {% csrf_token %}
+                            <input type="email" class="w-100 form-control border-0 py-3 mb-4"
+                                placeholder="Your Email Address" name="email">
+                            <input type="password" class="w-100 form-control border-0 py-3 mb-4"
+                                placeholder="Your Password" name="password">
+                            <button class="w-100 btn form-control border-secondary py-3 bg-white text-primary "
+                                type="submit">Login</button>
+                        </form>
+                          <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Login End -->
+
+
+</body>
+
+</html>
+{% endblock %}

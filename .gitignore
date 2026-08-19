@@ -17,6 +17,7 @@ venv/
 
 # Django generated files
 /mysite/static/
+/mysite/staticfiles/
 /mysite/media/
 *.sqlite3
 
